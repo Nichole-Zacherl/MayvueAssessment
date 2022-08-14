@@ -1,32 +1,51 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using MotionPictureAPI.DAO;
 
 namespace MotionPictureAPI
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            Environment = env;
         }
 
         public IConfiguration Configuration { get; }
+        public IWebHostEnvironment Environment { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
             services.AddSwaggerGen();
+
+            if (Environment.IsDevelopment())
+            {
+                services.AddCors(options =>
+                {
+                    options.AddPolicy("AllowAll",
+                        builder =>
+                        {
+                            builder
+                            .AllowAnyOrigin()
+                            .AllowAnyMethod()
+                            .AllowAnyHeader();
+                        });
+                });
+            }
+
+            services.AddSingleton<IMotionPictureDAO>(s =>
+                new MotionPictureDAO(
+                    Configuration.GetConnectionString("DefaultConnection"),
+                    s.GetRequiredService<ILogger<MotionPictureDAO>>()
+                )
+            );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,17 +57,21 @@ namespace MotionPictureAPI
                 app.UseSwaggerUI();
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseHttpsRedirection();
+            else
+            {
+                app.UseHttpsRedirection();
+            }
 
             app.UseRouting();
 
+            if (env.IsDevelopment())
+            {
+                app.UseCors("AllowAll");
+            }
+
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => endpoints.MapControllers().RequireCors("AllowAll"));
         }
     }
 }

@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using MotionPictureAPI.DAO;
 
 namespace MotionPictureAPI.Controllers
 {
@@ -11,30 +11,53 @@ namespace MotionPictureAPI.Controllers
     [Route("[controller]")]
     public class MotionPictureController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
         private readonly ILogger<MotionPictureController> _logger;
+        private readonly IMotionPictureDAO _motionPictureDAO;
 
-        public MotionPictureController(ILogger<MotionPictureController> logger)
+        public MotionPictureController(ILogger<MotionPictureController> logger, IMotionPictureDAO motionPictureDAO)
         {
             _logger = logger;
+            this._motionPictureDAO = motionPictureDAO;
         }
 
         [HttpGet]
-        public IEnumerable<MotionPicture> Get()
+        //public async Task<IEnumerable<MotionPicture>> Get()   
+        public async Task<List<MotionPicture>> GetAll()
         {
-            var rng = new Random();
-            return Enumerable.Range(1, 5).Select(index => new MotionPicture
-            {
-                ID = index,
-                Name = Summaries[rng.Next(Summaries.Length)],
-                ReleaseYear = DateTime.Now.AddDays(index).Year,
-                Description = Summaries[rng.Next(Summaries.Length)],
-            })
-            .ToArray();
+            return await _motionPictureDAO.GetAll();
         }
+
+        [HttpPost]
+        public async Task<bool> Create(MotionPicture motionPicture)
+        {
+            return await _motionPictureDAO.Create(motionPicture);
+        }
+
+        [HttpPost("copy/{id}")]
+        public async Task<bool> Copy(int id)
+        {
+            return await _motionPictureDAO.Copy(id);
+        }
+
+        [HttpPut]
+        public async Task<bool> Put(MotionPicture motionPicture)
+        {
+            return await _motionPictureDAO.Update(motionPicture);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                return Ok(await _motionPictureDAO.Delete(id));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Unable to Delete");
+                return Problem("An unexpected error occurred", statusCode: 500);
+            }
+        }
+
     }
 }
