@@ -1,4 +1,4 @@
-<template>
+b<template>
   <div class="motion-picture-container">
     <div class="add-btn">
       <b-button variant="primary" @click="showCreateModal()">
@@ -60,13 +60,12 @@
             <label for="name-input"> Title: </label>
           </div>
           <div class="control">
-            <input
+            <b-form-input
               class="name-input"
-              type="text"
-              maxlength="50"
               v-model="motionPicture.name"
+              maxlength="50"
               required
-            />
+            ></b-form-input>
           </div>
         </div>
 
@@ -74,22 +73,32 @@
           <div class="field">
             <label for="textarea-input">Description:</label>
           </div>
-          <div class="control">
-            <textarea class="textarea-input" maxlength="500"></textarea>
-          </div>
+          <b-form-textarea
+            id="textarea"
+            v-model="motionPicture.description"
+            maxlength="500"
+          ></b-form-textarea>
         </div>
 
-        <div class="year">
+        <div>
           <div class="field">
             <label for="year-input"> Release Year: </label>
           </div>
           <div class="control">
-            <input class="year-input" type="text" maxlength="4" required />
+            <b-form-input
+              class="year-input"
+              v-model="motionPicture.releaseYear"
+              min="1000"
+              max="9999"
+              required
+              type="number"
+              number
+            ></b-form-input>
           </div>
         </div>
       </form>
-      <template v-slot:modal-footer="{ ok, cancel, deleteMotionPicture }">
-        <b-button @click="ok()">Save</b-button>
+      <template v-slot:modal-footer>
+        <b-button @click="updateNewMotionPicture()">Save</b-button>
         <b-button @click="cancel()">Cancel</b-button>
         <b-button @click="deleteMotionPicture(motionPicture.id)"
           >Delete</b-button
@@ -101,15 +110,27 @@
       ref="create-modal"
       id="create-modal"
       title="Create A Motion Picture"
-      ok-title="Save"
+      hide-footer
+      @ok="submitMotionPicture"
+      @addModal="addNewMotionPicture"
     >
-      <form class="create-motion-picture-form">
+      <form
+        ref="createForm"
+        validated=""
+        class="create-motion-picture-form"
+        @submit.prevent="addNewMotionPicture"
+      >
         <div>
           <div class="field">
             <label for="name-input"> Title: </label>
           </div>
           <div class="control">
-            <input class="name-input" type="text" maxlength="50" required />
+            <b-form-input
+              class="name-input"
+              v-model="motionPicture.name"
+              maxlength="50"
+              required
+            ></b-form-input>
           </div>
         </div>
 
@@ -117,9 +138,11 @@
           <div class="field">
             <label for="textarea-input">Description:</label>
           </div>
-          <div class="control">
-            <textarea class="textarea-input" maxlength="500"></textarea>
-          </div>
+          <b-form-textarea
+            id="textarea"
+            v-model="motionPicture.description"
+            maxlength="500"
+          ></b-form-textarea>
         </div>
 
         <div>
@@ -127,8 +150,26 @@
             <label for="year-input"> Release Year: </label>
           </div>
           <div class="control">
-            <input class="year-input" type="text" maxlength="4" required />
+            <b-form-input
+              class="year-input"
+              v-model="motionPicture.releaseYear"
+              required
+              type="number"
+              min="1000"
+              max="9999"
+              number
+            ></b-form-input>
           </div>
+        </div>
+        <div class="modal-footer">
+          <b-button type="submit" variant="primary">Submit</b-button>
+          <b-button type="reset">Reset</b-button>
+          <b-button @click="cancel">Cancel</b-button>
+          <b-button
+            variant="danger"
+            @click="deleteMotionPicture(motionPicture.id)"
+            >Delete</b-button
+          >
         </div>
       </form>
     </b-modal>
@@ -159,16 +200,24 @@ export default {
         "Actions",
       ],
       motionPicture: {
-        id: "",
         name: "",
         description: "",
+        releaseYear: "",
       },
     };
   },
   methods: {
+    submitMotionPicture() {
+      console.log(this.$refs.createForm);
+      this.$refs.createForm.submit();
+    },
     addNewMotionPicture() {
-      this.$store.commit("ADD_MOTION_PICTURE", this.newMotionPicture);
-      this.$router.push({ name: "home" });
+      motionPictureService.add(this.motionPicture).then((response) => {
+        if (response.status === 200) {
+          this.$store.commit("ADD_MOTION_PICTURE", this.motionPicture);
+          this.$bvModal.hide("create-modal");
+        }
+      });
     },
     showEditModal() {
       this.$bvModal.show("edit-modal");
@@ -196,39 +245,27 @@ export default {
         }
       });
     },
-    //  updateMotionPicture() {
-    //   const motionPicture = { id: this.id, name: this.name };
-    //   if (this.id === 0) {
-    //     motionPictureService.add(motionPicture).then((response) => {
-    //       if (response.status === 201) {
-    //         this.$router.push(`/`);
-    //       }
-    //     });
-    //   } else {
-    //     motionPicture.name = this.name;
-    //     motionPictureService.update(motionPicture).then((response) => {
-    //       if (response.status === 200) {
-    //         this.$router.push(`/`);
-    //       }
-    //     });
-    //   }
+    // updateMotionPicture() {
+    //   //   const motionPicture = { id: this.id, name: this.name };
+    //   //   if (this.id === 0) {
+    //   //     motionPictureService.add(motionPicture).then((response) => {
+    //   //       if (response.status === 201) {
+    //   //         this.$router.push(`/`);
+    //   //       }
+    //   //     });
+    //   //   } else {
+    //   //     motionPicture.name = this.name;
+    //   //     motionPictureService.update(motionPicture).then((response) => {
+    //   //       if (response.status === 200) {
+    //   //         this.$router.push(`/`);
+    //   //       }
+    //   //     });
+    //   //   }
     // },
   },
   created() {
     this.getMotionPictures();
   },
-  // created() {
-  //   topicService
-  //     .get(this.topicID)
-  //     .then((response) => {
-  //       this.$store.commit("SET_ACTIVE_MOTION_PICTURE", response.data);
-  //       this.title = response.data.title;
-  //     })
-  //     .catch((error) => {
-  //       if (error.response.status == 404) {
-  //         this.$router.push({ name: "NotFound" });
-  //       }
-  //     });
 };
 </script>
 
@@ -244,9 +281,6 @@ export default {
   width: 380px;
   height: 100px;
 }
-/* .name-input {
-  width: 380px;
-} */
 .add-btn {
   display: flex;
   justify-content: flex-end;
@@ -254,5 +288,8 @@ export default {
 }
 .update-motion-picture-form {
   padding: 20px;
+}
+.modal-footer {
+  margin: 15px;
 }
 </style>
