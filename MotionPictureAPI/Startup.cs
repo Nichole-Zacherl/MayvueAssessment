@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using MotionPictureAPI.DAO;
 
 namespace MotionPictureAPI
@@ -19,7 +18,6 @@ namespace MotionPictureAPI
         public IConfiguration Configuration { get; }
         public IWebHostEnvironment Environment { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
@@ -40,15 +38,10 @@ namespace MotionPictureAPI
                 });
             }
 
-            services.AddSingleton<IMotionPictureDAO>(s =>
-                new MotionPictureDAO(
-                    Configuration.GetConnectionString("DefaultConnection"),
-                    s.GetRequiredService<ILogger<MotionPictureDAO>>()
-                )
+            services.AddSingleton<IMotionPictureDAO>(_ => new MotionPictureDAO(Configuration.GetConnectionString("DefaultConnection"))
             );
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())

@@ -156,14 +156,6 @@ export default {
         this.addNewMotionPicture();
       }
     },
-    addNewMotionPicture() {
-      motionPictureService.add(this.motionPicture).then((response) => {
-        if (response.status === 200) {
-          this.$bvModal.hide("modal");
-          this.getMotionPictures();
-        }
-      });
-    },
     resetModal() {
       this.wasValidated = false;
       this.motionPicture.id = 0;
@@ -189,6 +181,46 @@ export default {
     getMotionPicture(id) {
       return this.$store.state.motionPictures.find((m) => m.id === id);
     },
+    addNewMotionPicture() {
+      motionPictureService
+        .add(this.motionPicture)
+        .then((response) => {
+          if (response.status === 201) {
+            this.makeToast(
+              `"${this.motionPicture.name}" created successfully!`
+            );
+            this.$bvModal.hide("modal");
+            this.getMotionPictures();
+          }
+        })
+        .catch((e) =>
+          this.makeToast(
+            "Error creating motion picture: " + e,
+            "Error",
+            "danger"
+          )
+        );
+    },
+    updateMotionPicture() {
+      motionPictureService
+        .update(this.motionPicture)
+        .then((response) => {
+          if (response.status === 200) {
+            this.makeToast(
+              `"${this.motionPicture.name}" updated successfully!`
+            );
+            this.getMotionPictures();
+            this.hideModal();
+          }
+        })
+        .catch((e) =>
+          this.makeToast(
+            "Error updating motion picture: " + e,
+            "Error",
+            "danger"
+          )
+        );
+    },
     deleteMotionPicture(id) {
       const mp = this.getMotionPicture(id);
       this.$bvModal
@@ -208,17 +240,16 @@ export default {
               .then((response) => {
                 if (response.status === 200) {
                   const mp = this.getMotionPicture(id);
-                  this.getMotionPictures().then(() => {
-                    this.$nextTick(() => {
-                      setTimeout(() => {
-                        this.makeToast(`Deleted "${mp.name}"`, "danger");
-                      });
-                    });
-                  });
+                  this.makeToast(`Deleted "${mp.name}"`);
+                  this.getMotionPictures();
                 }
               })
               .catch((e) =>
-                this.makeToast("Error deleting motion picture: " + e, "danger")
+                this.makeToast(
+                  "Error deleting motion picture: " + e,
+                  "Error",
+                  "danger"
+                )
               );
           }
         });
@@ -231,22 +262,13 @@ export default {
         this.$bvModal.show("modal");
       }
     },
-    updateMotionPicture() {
-      motionPictureService.update(this.motionPicture).then((response) => {
-        if (response.status === 200) {
-          this.getMotionPictures();
-          this.hideModal();
-        }
-      });
-    },
-    makeToast(message, variant = "success") {
+    makeToast(message, title = "Success", variant = "success") {
       this.toastCount++;
       this.$bvToast.toast(message, {
-        title: "BootstrapVue Toast",
-        autoHideDelay: 5000,
+        title: title,
+        autoHideDelay: 3000,
         appendToast: true,
         variant,
-        noCloseButton: true,
       });
     },
   },
@@ -281,6 +303,7 @@ export default {
 }
 th {
   min-width: 150px;
+  user-select: none;
 }
 .toast:not(.show) {
   display: block;

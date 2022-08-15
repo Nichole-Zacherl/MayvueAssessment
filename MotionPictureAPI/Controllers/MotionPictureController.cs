@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MotionPictureAPI.DAO;
@@ -17,47 +18,86 @@ namespace MotionPictureAPI.Controllers
         public MotionPictureController(ILogger<MotionPictureController> logger, IMotionPictureDAO motionPictureDAO)
         {
             _logger = logger;
-            this._motionPictureDAO = motionPictureDAO;
+            _motionPictureDAO = motionPictureDAO;
         }
 
         [HttpGet]
-        //public async Task<IEnumerable<MotionPicture>> Get()   
-        public async Task<List<MotionPicture>> GetAll()
-        {
-            return await _motionPictureDAO.GetAll();
-        }
-
-        [HttpPost]
-        public async Task<bool> Create(MotionPicture motionPicture)
-        {
-            return await _motionPictureDAO.Create(motionPicture);
-        }
-
-        [HttpPost("copy/{id}")]
-        public async Task<bool> Copy(int id)
-        {
-            return await _motionPictureDAO.Copy(id);
-        }
-
-        [HttpPut]
-        public async Task<bool> Put(MotionPicture motionPicture)
-        {
-            return await _motionPictureDAO.Update(motionPicture);
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [ProducesResponseType(typeof(IEnumerable<MotionPicture>), 200)]
+        public async Task<IActionResult> GetAll()
         {
             try
             {
-                return Ok(await _motionPictureDAO.Delete(id));
+                return Ok(await _motionPictureDAO.GetAll());
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Unable to Delete");
+                _logger.LogError(ex, "Unable to fetch motion picutres");
                 return Problem("An unexpected error occurred", statusCode: 500);
             }
         }
 
+        [HttpPost]
+        [ProducesResponseType(typeof(MotionPicture), 200)]
+        public async Task<IActionResult> Create(MotionPicture motionPicture)
+        {
+            try
+            {
+                await _motionPictureDAO.Create(motionPicture);
+                return StatusCode(StatusCodes.Status201Created, motionPicture);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unable to create motion picture");
+                return Problem("An unexpected error occurred", statusCode: 500);
+            }
+        }
+
+        [HttpPut]
+        [ProducesResponseType(200)]
+        public async Task<IActionResult> Put(MotionPicture motionPicture)
+        {
+            try
+            {
+                var updated = await _motionPictureDAO.Update(motionPicture);
+                if (updated)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest($"Unable to locate motion picture {motionPicture.ID}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Unable to update motion picure {motionPicture.ID}");
+                return Problem("An unexpected error occurred", statusCode: 500);
+            }
+        }
+
+        [HttpDelete("{id}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(202)]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var deleted = await _motionPictureDAO.Delete(id);
+                if (deleted)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    // No error but nothing to delete
+                    return Accepted();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Unable to delete motion picure {id}");
+                return Problem("An unexpected error occurred", statusCode: 500);
+            }
+        }
     }
 }
