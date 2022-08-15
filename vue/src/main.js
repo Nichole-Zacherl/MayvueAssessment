@@ -19,6 +19,7 @@ Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 Vue.config.productionTip = false
 
+axios.defaults.headers['Access-Control-Allow-Origin'] = '*';
 axios.defaults.baseURL = process.env.VUE_APP_REMOTE_API;
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)

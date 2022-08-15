@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 export default {
-
     list() {
         return axios.get('/motionPicture');
     },
@@ -13,8 +12,5 @@ export default {
     },
     delete(id) {
         return axios.delete(`/motionPicture/${id}`);
-    },
-    copy(id) {
-        return axios.post(`/motionPicture/copy/${id}`);
     },
 }
