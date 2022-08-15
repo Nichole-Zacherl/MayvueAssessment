@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.32228.343
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotionPictureAPI", "MotionPictureAPI.csproj", "{FC5179D1-1477-425F-BEAC-CFB4E4802EFE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MotionPictureAPI", "MotionPictureAPI\MotionPictureAPI.csproj", "{FC5179D1-1477-425F-BEAC-CFB4E4802EFE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotionPictureTests", "..\MotionPictureTests\MotionPictureTests.csproj", "{7F55B6ED-5B5E-4019-93A1-7C150750F30C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotionPictureTests", "MotionPictureTests\MotionPictureTests.csproj", "{7F55B6ED-5B5E-4019-93A1-7C150750F30C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
